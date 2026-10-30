@@ -7,11 +7,12 @@
 #define MINIZ_NO_ZLIB_COMPATIBLE_NAME
 #define MINIZ_NO_MALLOC
 #define NDEBUG
-#include "miniz/miniz.c"
+#include "miniz/miniz.h"
 #include "dialog.h"
-#include <shobjidl_core.h>
+#include <shobjidl.h>
 #include <shlwapi.h>
 #include <wininet.h>
+#include <stdio.h>
 #pragma comment(lib, "ole32.lib")
 #pragma comment(lib, "advapi32.lib")
 #pragma comment(lib, "comctl32.lib")
@@ -1269,15 +1270,21 @@ void start(void)
    parse_manifest(string_join_buf(manifest_path, temp_path, "\\BuildToolsManifest.Preview.json"), true);
    echoln("");
    download_service_stop();
+   echoln("finish download manifest files");
   }
   if (gui_mode)
+  //if(true)
   {
+   echoln("enter gui mode!");
    FreeConsole();
    INITCOMMONCONTROLSEX controls = (INITCOMMONCONTROLSEX){0};
    controls.dwSize = sizeof(INITCOMMONCONTROLSEX);
    controls.dwICC = ICC_STANDARD_CLASSES | ICC_LINK_CLASS;
    InitCommonControlsEx(&controls);
-   DialogBox(GetModuleHandle(null), L"dialog", null, dialog_proc);
+   int ret = DialogBox(GetModuleHandle(null), MAKEINTRESOURCEW(ID_DIALOG), null, dialog_proc);
+   if(ret <= 0){
+       return;
+   }
    if (!install_start)
     exit(1);
    char* env_mode_str = "none";
@@ -1296,8 +1303,10 @@ void start(void)
    info.lpFile = wprogram;
    info.lpParameters = wparams;
    info.nShow = SW_NORMAL;
-   if (!ShellExecuteEx(&info))
+   if (!ShellExecuteEx(&info)){
+       echoln("shellexecute fail");
     exit(1);
+   }
    WaitForSingleObject(info.hProcess, INFINITE);
    CloseHandle(info.hProcess);
    return;

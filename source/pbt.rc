@@ -1,9 +1,31 @@
 #include <windows.h>
 #include "dialog.h"
 
+#define CREATEPROCESS_MANIFEST_RESOURCE_ID 1
+#define RT_MANIFEST 24
+
+CREATEPROCESS_MANIFEST_RESOURCE_ID RT_MANIFEST
+BEGIN
+    "<?xml version=""1.0"" encoding=""UTF-8"" standalone=""yes""?>"
+    "<assembly xmlns=""urn:schemas-microsoft-com:asm.v1"" manifestVersion=""1.0"">"
+    "  <dependency>"
+    "    <dependentAssembly>"
+    "      <assemblyIdentity"
+    "        type=""Win32"""
+    "        name=""Microsoft.Windows.Common-Controls"""
+    "        version=""6.0.0.0"""
+    "        processorArchitecture=""*"""
+    "        publicKeyToken=""6595b64144ccf1df"""
+    "        language=""*"""
+    "      />"
+    "    </dependentAssembly>"
+    "  </dependency>"
+    "</assembly>"
+END
+
 icon ICON "pbt.ico"
 
-dialog DIALOGEX 0, 0, 245, 105
+ID_DIALOG DIALOGEX 0, 0, 245, 105
 STYLE DS_SETFONT | WS_POPUP | WS_VISIBLE | WS_CAPTION | WS_SYSMENU
 CAPTION "PortableBuildTools Setup 2.10.2"
 FONT 9, "Segoe UI", 0, 0, 0x1

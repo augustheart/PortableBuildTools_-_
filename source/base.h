@@ -915,6 +915,7 @@ void _main_thread(HWND service)
  DWORD pid;
  GetWindowThreadProcessId(GetConsoleWindow(), &pid);
  invoked_from_console = (GetCurrentProcessId() != pid);
+ echoln(invoked_from_console ? "console mode" : "gui mode" );
  start();
  SendMessage(service, WM_CLOSE, 0, 0);
 }
@@ -925,7 +926,7 @@ void _start(void)
  HINSTANCE instance = GetModuleHandle(null);
  RegisterClass(&(WNDCLASS){.lpfnWndProc = _service_proc, .hInstance = instance, .lpszClassName = TEXT(appid) L":service"});
  HWND service = CreateWindow(TEXT(appid) L":service", null, 0, CW_USEDEFAULT, CW_USEDEFAULT, CW_USEDEFAULT, CW_USEDEFAULT, HWND_MESSAGE, null, instance, null);
- thread_start(_main_thread, service);
+ thread_start((thread_callback)_main_thread, service);
  MSG msg = {0};
  while (GetMessage(&msg, null, 0, 0))
  {
