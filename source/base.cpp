@@ -276,7 +276,7 @@ bool to_wide(const char* path, WCHAR* wpath, int wpath_count)
 
 struct file file_open(const char* path, bool write_access)
 {
- struct file file = {0};
+ struct file file = {};
  WCHAR wpath[MAX_PATH];
  if (!to_wide(path, wpath, countof(wpath)))
   return (file);
@@ -355,7 +355,7 @@ bool folder_exists(const char* path)
 
 struct folder folder_open(const char* path)
 {
- struct folder folder = {0};
+ struct folder folder = {};
  WCHAR wpath[MAX_PATH];
  char path_fixed[MAX_PATH * 3];
  string_join_buf(path_fixed, path, "\\*");
@@ -428,7 +428,7 @@ bool folder_delete(const char* path)
 
 void sleep(n64 duration)
 {
- Sleep(clamp_bot(duration / millisecond, 1));
+ Sleep(cast(DWORD, clamp_bot(duration / millisecond, 1)));
 }
 
 struct _thread_data
@@ -440,7 +440,7 @@ struct _thread_data
 
 DWORD WINAPI _thread(void* data)
 {
- struct _thread_data thread_data = {0};
+ struct _thread_data thread_data = {};
  memcpy(&thread_data, data, sizeof(struct _thread_data));
  SetEvent(thread_data.signal);
  thread_data.callback(thread_data.data);
@@ -449,7 +449,7 @@ DWORD WINAPI _thread(void* data)
 
 HANDLE thread_start(thread_callback callback, void* data)
 {
- struct _thread_data thread_data = {0};
+ struct _thread_data thread_data = {};
  thread_data.callback = callback;
  thread_data.data = data;
  thread_data.signal = CreateEvent(null, false, false, null);
@@ -510,7 +510,7 @@ LRESULT CALLBACK _service_proc(HWND service, UINT message, WPARAM wparam, LPARAM
 
 void message_loop(void)
 {
- MSG msg = {0};
+ MSG msg = {};
  while (GetMessage(&msg, null, 0, 0))
   DispatchMessage(&msg);
 }

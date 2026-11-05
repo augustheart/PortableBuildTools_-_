@@ -20,11 +20,13 @@ static const GUID pbt_IID_IFileOpenDialog = {0xd57c7288, 0xd4ad, 0x4768, {0xbe, 
 #define CLSID_FileOpenDialog pbt_CLSID_FileOpenDialog
 #define IID_IFileOpenDialog pbt_IID_IFileOpenDialog
 
+#if defined(_MSC_VER)
 #pragma comment(lib, "ole32.lib")
 #pragma comment(lib, "advapi32.lib")
 #pragma comment(lib, "comctl32.lib")
 #pragma comment(lib, "shlwapi.lib")
 #pragma comment(lib, "wininet.lib")
+#endif
 #define utf8_to_utf16(str, str_count, wbuf, wbuf_count) \
  MultiByteToWideChar(CP_UTF8, MB_ERR_INVALID_CHARS, str, str_count, wbuf, wbuf_count)
 #define utf16_to_utf8(wstr, wstr_count, buf, buf_count) \
@@ -455,7 +457,7 @@ size_t miniz_file_read(void* context, mz_uint64 file_ofs, void* buf, size_t buf_
 {
  struct file* file = cast(struct file*, context);
  file_seek(file, file_ofs);
- return file_read(file, buf, buf_count);
+ return file_read(file, buf, cast(n32, buf_count));
 }
 
 size_t mz_file_write(void* context, mz_uint64 file_ofs, const void* buf, size_t buf_count)
@@ -516,8 +518,8 @@ enum class EnvMode : unsigned char
  user,
  global,
 };
-const size_t VERSION_COUNT = 32;
-const size_t VERSION_LENGTH = 16;
+constexpr i64 VERSION_COUNT = 32;
+constexpr i64 VERSION_LENGTH = 16;
 bool install_start;
 bool subprocess_mode;
 bool gui_mode;
@@ -603,7 +605,7 @@ LRESULT CALLBACK download_service_proc(HWND service, UINT message, WPARAM wparam
    content_size = 0;
   download_service.content_size.store(content_size, std::memory_order_relaxed);
   set_download_status(download_status_downloading);
-  struct file file = {0};
+  struct file file = {};
   DWORD n = 0;
   char chunk[16 * mem_page_size];
   bool success = false;
@@ -733,7 +735,7 @@ void download_service_stop(void)
 
 void download_file(const char* file_url, const char* file_path, const char* display_name)
 {
- struct download_info info = {0};
+ struct download_info info = {};
  info.file_url = file_url;
  info.file_path = file_path;
  while (true)
@@ -1176,9 +1178,9 @@ void parse_vsmanifest(const char* path, bool preview_mode)
 void parse_manifest(const char* path, bool preview_mode)
 {
  echoln("Parsing ", preview_mode ? "Preview" : "Release", " Build Tool Manifest...");
- char msvc_versions[VERSION_COUNT][VERSION_LENGTH] = {0};
+ char msvc_versions[VERSION_COUNT][VERSION_LENGTH] = {};
  i64 msvc_versions_count = 0;
- char sdk_versions[VERSION_COUNT][VERSION_LENGTH] = {0};
+ char sdk_versions[VERSION_COUNT][VERSION_LENGTH] = {};
  i64 sdk_versions_count = 0;
  json_context jc;
  jc.c8 = 0;
@@ -1394,7 +1396,7 @@ void run_gui(void)
  controls.dwSize = sizeof(INITCOMMONCONTROLSEX);
  controls.dwICC = ICC_STANDARD_CLASSES | ICC_LINK_CLASS;
  InitCommonControlsEx(&controls);
- int ret = DialogBox(instance, MAKEINTRESOURCEW(ID_DIALOG), null, dialog_proc);
+ INT_PTR ret = DialogBox(instance, MAKEINTRESOURCEW(ID_DIALOG), null, dialog_proc);
  if (ret < 0)
   return;
  if (!install_start)
@@ -1440,7 +1442,7 @@ void string_join_2(O (&buffer)[N], const Sep& sep, const Head& first, const Tail
 void build_list(const char* ver, const char* arch, bool spectre)
 {
     echoln(arch, spectre ? "true" : "false");
-    char msvc_packages[32][128]={0};
+    char msvc_packages[32][128]={};
     size_t idx = 0;
     for(const auto& comp1 : {"ATL","MFC"})
     {
@@ -1475,7 +1477,7 @@ void build_list(const char* ver, const char* arch, bool spectre)
             string_join_2(msvc_packages[idx++], ".","Microsoft","VC","MFC","MBCS",strcmp(arch,"X86")==0?"":arch,is_debug,"Spectre","base");
         }
     }
-    for(auto n(0); n < idx; ++n)
+    for(size_t n = 0; n < idx; ++n)
     {
         echoln(msvc_packages[n]);
     }
@@ -1496,7 +1498,7 @@ void build_batch(const char* install, const char* msvcv, const char* sdkv, bool 
      "\nset WindowsSDKVersion=", sdkv,
      "\nset VSCMD_ARG_TGT_ARCH=", target_arch,
      "\nset VSCMD_ARG_HOST_ARCH=", host_arch, "\n");
-    file_write(&f, buf, strlen(buf));
+    file_write(&f, buf, cast(n32, strlen(buf)));
     file_write(&f, string_slice(
      "set INCLUDE=%VCToolsInstallDir%\\include;"));
     if(use_atlmfc)
@@ -1551,7 +1553,7 @@ void build_powershell(const char* install, const char* msvcv, const char* sdkv, 
     string_join_buf(buf,
      "$env:VSCMD_ARG_TGT_ARCH = '", target_arch,
      "'\n$env:VSCMD_ARG_HOST_ARCH = '", host_arch, "'\n");
-    file_write(&f, buf, strlen(buf));
+    file_write(&f, buf, cast(n32, strlen(buf)));
     file_write(&f, string_slice(
      "'Portable Build Tools environment started.'\n"
      "'* BUILD_TOOLS_ROOT   : {0}' -f $env:BUILD_TOOLS_ROOT\n"
@@ -1745,7 +1747,7 @@ void start(void)
    char answer[4];
    console_read(answer);
    string_lower(answer);
-   install_start = string_is(answer, "") | string_is(answer, "y") | string_is(answer, "yes");
+   install_start = string_is(answer, "") || string_is(answer, "y") || string_is(answer, "yes");
   }
   if (!install_start)
   {
@@ -1828,7 +1830,7 @@ void start(void)
   _string_copy(sdk_packages[sdk_packages_count++], sizeof(sdk_packages[0]), "Windows SDK for Windows Store Apps Libs-x86_en-us.msi");
   _string_copy(sdk_packages[sdk_packages_count++], sizeof(sdk_packages[0]), "Universal CRT Headers Libraries and Sources-x86_en-us.msi");
   wsprintfA(sdk_packages[sdk_packages_count++], "Windows SDK Desktop Libs %s-x86_en-us.msi", target_arch);
-  for (i64 i = 0; i < countof(targets); i++)
+  for (i64 i = 0; i < cast(i64, countof(targets)); i++)
   {
    const char* t = targets[i];
    wsprintfA(sdk_packages[sdk_packages_count++], "Windows SDK Desktop Headers %s-x86_en-us.msi", t);
@@ -1946,7 +1948,7 @@ void start(void)
    bool msvc_pkg = false;
    for (i64 i = 0; i < msvc_packages_count; i++)
     msvc_pkg = string_is(id_lower, msvc_packages[i]) ? true : msvc_pkg;
-   msvc_pkg = (string_is(lang, "en-US") | string_is(lang, "")) ? msvc_pkg : false;
+   msvc_pkg = (string_is(lang, "en-US") || string_is(lang, "")) ? msvc_pkg : false;
    if (msvc_pkg)
    {
     hope(json_object_key_find(&p, "payloads"), "payloads not found");
@@ -2000,7 +2002,7 @@ void start(void)
          str[2] = ((i + 2) < n) ? chunk[i + 2] : 0;
          str[3] = ((i + 3) < n) ? chunk[i + 3] : 0;
          bool match = (str[0] == '.') & (str[1] == 'c') & (str[2] == 'a') & (str[3] == 'b');
-         if (match && msi_cabs_count < countof(msi_cabs))
+         if (match && msi_cabs_count < cast(i64, countof(msi_cabs)))
          {
           i64 index = msi.pos - countof(chunk) + i;
           struct file cabs_reader = file_open(path, false);
@@ -2078,9 +2080,9 @@ void start(void)
    for (i64 i = 0; i < n; i++)
    {
     char zipped_file_name[MAX_PATH * 3];
-    if (mz_zip_reader_is_file_a_directory(&zip_file, i))
+    if (mz_zip_reader_is_file_a_directory(&zip_file, cast(mz_uint, i)))
      continue;
-    mz_zip_reader_get_filename(&zip_file, i, zipped_file_name, countof(zipped_file_name));
+    mz_zip_reader_get_filename(&zip_file, cast(mz_uint, i), zipped_file_name, cast(mz_uint, countof(zipped_file_name)));
     if (!string_trim_left(zipped_file_name, "Contents/"))
      continue;
     char zipped_file_path[MAX_PATH * 3];
@@ -2101,7 +2103,7 @@ void start(void)
     struct file zf = file_open(zipped_file_path, true);
     if (!zf.handle)
      continue;
-    if (!mz_zip_reader_extract_to_callback(&zip_file, i, mz_file_write, &zf, 0))
+    if (!mz_zip_reader_extract_to_callback(&zip_file, cast(mz_uint, i), mz_file_write, &zf, 0))
     {
      file_close(&zf);
      break;
@@ -2328,7 +2330,7 @@ void start(void)
   LSTATUS err = RegGetValue(location, subkey, L"Path", RRF_RT_REG_SZ | RRF_NOEXPAND, null, wpath, &wpath_size);
   err = (err == ERROR_UNSUPPORTED_TYPE) ? 0 : err;
   i64 wpath_count = (err != 0) ? 0 : (wpath_size / sizeof(WCHAR));
-  if (utf16_to_utf8(wpath, wpath_count, path, countof(path)) <= 0)
+  if (utf16_to_utf8(wpath, cast(int, wpath_count), path, countof(path)) <= 0)
    path[0] = 0;
   // split path into strings by ;
   i64 path_count = strlen(path);

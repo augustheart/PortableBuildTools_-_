@@ -52,9 +52,9 @@ const n32 n32_min = 0x00000000;
 const n32 n32_max = 0xFFFFFFFF;
 const n64 n64_min = 0x0000000000000000;
 const n64 n64_max = 0xFFFFFFFFFFFFFFFF;
-const i8 i8_min = 0x80;
+const i8 i8_min = -128;
 const i8 i8_max = 0x7F;
-const i16 i16_min = 0x8000;
+const i16 i16_min = -32768;
 const i16 i16_max = 0x7FFF;
 const i32 i32_min = 0x80000000;
 const i32 i32_max = 0x7FFFFFFF;
@@ -149,7 +149,7 @@ void check_privilege(void);
 #define string_is(s, x) \
 	(strcmp((s), (x)) == 0)
 #define itos(x) \
-	_ui64toa((n64)(x), (char[66]){0}, 10)
+	([&]() -> char* { static char buf[66]; _ui64toa((n64)(x), buf, 10); return buf; }())
 #define console_read(b) \
 	_console_read(b, countof(b))
 #define echo(...) \
