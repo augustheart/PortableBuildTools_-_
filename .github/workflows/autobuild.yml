@@ -42,7 +42,7 @@ jobs:
 
     - name: Build
       # Build your program with the given configuration
-      run: cmake --build ${{github.workspace}}/build --config ${{env.BUILD_TYPE}}
+      run: cmake --build ${{github.workspace}}/build --config MinSizeRel
     - name: build zip
       shell: bash
       run: 7z a -tzip -mx=9 release/portablebuildtools.zip build/MinSizeRel/portablebuildtools.exe
