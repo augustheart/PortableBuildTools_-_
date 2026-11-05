@@ -1,12 +1,29 @@
 cmake_minimum_required(VERSION 3.12)
-project(portablebuildtools)
-set(SOURCE source/pbt.c source/miniz/miniz.c)
+project(portablebuildtools LANGUAGES C CXX)
+set(CMAKE_CXX_STANDARD 20)
+set(CMAKE_CXX_STANDARD_REQUIRED ON)
+set(CMAKE_CXX_EXTENSIONS OFF)
+set(SOURCE source/pbt.cpp source/base.cpp source/miniz/miniz.c)
 set(RESOURCE source/pbt.rc)
+set_source_files_properties(source/miniz/miniz.c PROPERTIES
+ COMPILE_DEFINITIONS "MINIZ_NO_DEFLATE_APIS;MINIZ_NO_ZLIB_APIS;MINIZ_NO_STDIO;MINIZ_NO_TIME;MINIZ_NO_MALLOC;MINIZ_NO_ZLIB_COMPATIBLE_NAMES")
 add_executable(${PROJECT_NAME} WIN32 ${SOURCE} ${RESOURCE})
-set_target_properties(${PROJECT_NAME} PROPERTIES WIN32_EXECUTABLE FALSE)
+set_target_properties(${PROJECT_NAME} PROPERTIES WIN32_EXECUTABLE FALSE LINKER_LANGUAGE CXX)
 target_link_libraries(${PROJECT_NAME} PRIVATE
-Ole32 Comctl32 Wininet Shlwapi uuid)
+Ole32 Comctl32 Wininet Shlwapi Advapi32)
+target_compile_options(${PROJECT_NAME} PRIVATE
+ $<$<NOT:$<CONFIG:Debug>>:-Oz>
+ -ffunction-sections -fdata-sections -flto -fmerge-all-constants
+ -fno-asynchronous-unwind-tables -fno-unwind-tables)
+target_compile_options(${PROJECT_NAME} PRIVATE
+ $<$<COMPILE_LANGUAGE:CXX>:-fno-exceptions>
+ $<$<COMPILE_LANGUAGE:CXX>:-fno-rtti>
+ $<$<COMPILE_LANGUAGE:CXX>:-fno-threadsafe-statics>
+ $<$<COMPILE_LANGUAGE:CXX>:-fno-use-cxa-atexit>
+ $<$<COMPILE_LANGUAGE:CXX>:-fno-c++-static-destructors>)
 target_link_options(${PROJECT_NAME} PRIVATE
-$<$<NOT:$<CONFIG:DEBUG>>:-s>)
+ $<$<NOT:$<CONFIG:DEBUG>>:-s>)
 target_link_options(${PROJECT_NAME} PRIVATE
--static -nostartfiles -Wl,--entry=_start)
+ -nostdlib++ -flto -Wl,--gc-sections -Wl,--icf=all)
+target_link_options(${PROJECT_NAME} PRIVATE
+ -static -nostartfiles -Wl,--entry=_start)

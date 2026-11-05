@@ -20,12 +20,18 @@ BEGIN
     "      />"
     "    </dependentAssembly>"
     "  </dependency>"
+    "  <application xmlns=""urn:schemas-microsoft-com:asm.v3"">"
+    "    <windowsSettings>"
+    "      <dpiAware xmlns=""http://schemas.microsoft.com/SMI/2005/WindowsSettings"">true/pm</dpiAware>"
+    "      <dpiAwareness xmlns=""http://schemas.microsoft.com/SMI/2016/WindowsSettings"">PerMonitorV2</dpiAwareness>"
+    "    </windowsSettings>"
+    "  </application>"
     "</assembly>"
 END
 
 icon ICON "pbt.ico"
 
-ID_DIALOG DIALOGEX 0, 0, 245, 105
+ID_DIALOG DIALOGEX 0, 0, 245, 128
 STYLE DS_SETFONT | WS_POPUP | WS_VISIBLE | WS_CAPTION | WS_SYSMENU
 CAPTION "PortableBuildTools Setup 2.10.2"
 FONT 9, "Segoe UI", 0, 0, 0x1
@@ -40,10 +46,12 @@ BEGIN
 	COMBOBOX	ID_COMBO_HOST,	125,	35,	55,	0, CBS_DROPDOWNLIST | WS_TABSTOP | WS_VSCROLL
 	LTEXT "Target Arch",	-1,	185,	25,	100,	12
 	COMBOBOX	ID_COMBO_TARGET,	185,	35,	55,	0, CBS_DROPDOWNLIST | WS_TABSTOP | WS_VSCROLL
-	GROUPBOX "Destination Folder",	-1,	5,	55,	235,	30
-	EDITTEXT	ID_EDIT_PATH,	10,	65,	165,	14, ES_AUTOHSCROLL | WS_TABSTOP
-	PUSHBUTTON "Browse...",	ID_BUTTON_BROWSE,	180,	65,	55,	14
-	CONTROL "",	ID_CHECK_LICENSE, "Button", BS_AUTOCHECKBOX | WS_TABSTOP | WS_CHILD | WS_VISIBLE,	5,	90,	8,	12
-	CONTROL "I accept the <a>License Agreement</a>",	ID_SYSLINK_LICENSE, "SysLink", WS_TABSTOP | WS_CHILD | WS_VISIBLE,	15,	92,	110,	12
-	PUSHBUTTON "Install",	ID_BUTTON_INSTALL,	190,	89,	50,	14
+	CONTROL	"ATL+MFC", ID_CHECK_ATL,"Button", BS_AUTOCHECKBOX | WS_TABSTOP | WS_CHILD | WS_VISIBLE, 6, 52, 60, 14
+    	CONTROL	 "Spectre", ID_CHECK_SPECTRE,"Button", BS_AUTOCHECKBOX | WS_TABSTOP | WS_CHILD | WS_VISIBLE,71, 52, 60, 14
+	GROUPBOX "Destination Folder",	-1, 5, 73, 235, 3
+	EDITTEXT	ID_EDIT_PATH,	10, 83, 165, 14, ES_AUTOHSCROLL | WS_TABSTOP
+	PUSHBUTTON "Browse...",	ID_BUTTON_BROWSE,	180, 83, 55, 14
+	CONTROL "",	ID_CHECK_LICENSE, "Button", BS_AUTOCHECKBOX | WS_TABSTOP | WS_CHILD | WS_VISIBLE,	5, 108, 8, 12
+	CONTROL "I accept the <a>License Agreement</a>",	ID_SYSLINK_LICENSE, "SysLink", WS_TABSTOP | WS_CHILD | WS_VISIBLE,	15, 110, 110, 12
+	PUSHBUTTON "Install",	ID_BUTTON_INSTALL,	190, 107, 50, 14
 END
