@@ -1,0 +1,72 @@
+# This starter workflow is for a CMake project running on a single platform. There is a different starter workflow if you need cross-platform coverage.
+# See: https://github.com/actions/starter-workflows/blob/main/ci/cmake-multi-platform.yml
+name: CMake on a single platform
+
+on:
+  push:
+    branches: [ "master" ]
+  pull_request:
+    branches: [ "master" ]
+
+env:
+  # Customize the CMake build type here (Release, Debug, RelWithDebInfo, etc.)
+  BUILD_TYPE: Release
+
+jobs:
+  prepare:
+    runs-on: ubuntu-22.04
+    outputs:
+      version: ${{ steps.ver.outputs.version }}
+    steps:
+      - name: 计算版本号
+        id: ver
+        run: |
+          VERSION="v-${GITHUB_SHA::7}"
+          echo "version=$VERSION" >> "$GITHUB_OUTPUT"
+          echo "版本号: $VERSION"
+        
+  build:
+    # The CMake configure and build commands are platform agnostic and should work equally well on Windows or Mac.
+    # You can convert this to a matrix build if you need cross-platform coverage.
+    # See: https://docs.github.com/en/free-pro-team@latest/actions/learn-github-actions/managing-complex-workflows#using-a-build-matrix
+    runs-on: windows-2025-vs2026
+
+    steps:
+    - uses: actions/checkout@v4
+
+    - name: Configure CMake
+      # Configure CMake in a 'build' subdirectory. `CMAKE_BUILD_TYPE` is only required if you are using a single-configuration generator such as make.
+      # See https://cmake.org/cmake/help/latest/variable/CMAKE_BUILD_TYPE.html?highlight=cmake_build_type
+      run: cmake -B ${{github.workspace}}/build -DCMAKE_C_COMPILER=cl -DCMAKE_CXX_COMPILER=cl -DCMAKE -G "Ninja Multi-Config" -DCMAKE_CONFIGURATION_TYPES="Debug;Release;MinSizeRel" --fresh
+
+    - name: Build
+      # Build your program with the given configuration
+      run: cmake --build ${{github.workspace}}/build --config ${{env.BUILD_TYPE}}
+    - name: build zip
+      shell: bash
+      run: 7z a -tzip -mx=9 release/portablebuildtools.zip build/MinSizeRel/portablebuildtools.exe
+    - name: upload
+      uses: actions/upload-artifact@v4
+      with:
+          name: release-assest
+          path: release/*.zip
+          
+  release:
+    needs: [prepare, build]
+    runs-on: windows-2025-vs2026
+    permissions:
+      contents: write
+    steps:
+    - uses: actions/checkout@v4
+    - name: fetch package
+      uses: actions/download-artifact@v4
+      with:
+        name: release-assest
+        path: release
+    - name: do release
+      run: |
+        Get-ChildItem | Format-Table Name
+        gh release create "${{ needs.prepare.outputs.version }}" release/*.zip --title "Release ${{ needs.prepare.outputs.version }}" --generate-notes
+      env:
+        GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+    
