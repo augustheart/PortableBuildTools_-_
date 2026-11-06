@@ -17,6 +17,7 @@ jobs:
     runs-on: ubuntu-22.04
     outputs:
       version: ${{ steps.ver.outputs.VERSION }}
+      pre: ${{ steps.ver.outputs.IS_RELEASE }}
     steps:
       - uses: actions/checkout@v4
       - name: get version from tag
@@ -25,7 +26,7 @@ jobs:
           TAG="${GITHUB_REF#refs/tags/}"
           echo "TAG_NAME=$TAG" >> $GITHUB_OUTPUT
           if [[ "$TAG" == pre* ]]; then
-            echo "VERSION=${TAG#pre}" >> $GITHUB_OUTPUT
+            echo "VERSION=${TAG#pre-v}" >> $GITHUB_OUTPUT
             echo "IS_PRERELEASE=true" >> $GITHUB_OUTPUT
           else
             echo "VERSION=${TAG#v}" >> $GITHUB_OUTPUT
@@ -73,10 +74,16 @@ jobs:
       with:
         name: release-assest
         path: release
-    - name: do release
-      run: |
-        Get-ChildItem | Format-Table Name
-        gh release create "${{ needs.prepare.outputs.version }}" release/*.zip --title "Release ${{ needs.prepare.outputs.version }}" --generate-notes
+    - uses: softprops/action-gh-release@v2
+      with:
+          tag_name: ${{ needs.prepare.outputs.version }}
+          name: Release ${{ needs.prepare.outputs.version }}
+          prerelease: ${{ needs.prepare.outputs.pre == 'true' }}
+          draft: false
+          generate_release_notes: true
+          fail_on_unmatched_files: true
+          files: |
+            release/*.zip
       env:
         GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
     
