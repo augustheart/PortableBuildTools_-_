@@ -21,8 +21,7 @@ jobs:
       - uses: actions/checkout@v4
       - name: get version from tag
         id: ver
-        run: |
-          run: echo "VERSION=${GITHUB_REF#refs/tags/v}" >> $GITHUB_OUTPUT
+        run: echo "VERSION=${GITHUB_REF#refs/tags/v}" >> $GITHUB_OUTPUT
         
   build:
     # The CMake configure and build commands are platform agnostic and should work equally well on Windows or Mac.
