@@ -6,6 +6,7 @@ on:
    push:
      tags: 
        - 'v*'
+       - 'pre-v*'
 
 env:
   # Customize the CMake build type here (Release, Debug, RelWithDebInfo, etc.)
@@ -15,14 +16,12 @@ jobs:
   prepare:
     runs-on: ubuntu-22.04
     outputs:
-      version: ${{ steps.ver.outputs.version }}
+      version: ${{ steps.ver.outputs.VERSION }}
     steps:
-      - name: 计算版本号
+      - name: get version from tag
         id: ver
         run: |
-          VERSION="v-${GITHUB_SHA::7}"
-          echo "version=$VERSION" >> "$GITHUB_OUTPUT"
-          echo "版本号: $VERSION"
+          run: echo "VERSION=${GITHUB_REF#refs/tags/v}" >> $GITHUB_OUTPUT
         
   build:
     # The CMake configure and build commands are platform agnostic and should work equally well on Windows or Mac.
