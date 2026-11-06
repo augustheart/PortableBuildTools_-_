@@ -17,7 +17,7 @@ jobs:
     runs-on: ubuntu-22.04
     outputs:
       version: ${{ steps.ver.outputs.VERSION }}
-      pre: ${{ steps.ver.outputs.IS_RELEASE }}
+      pre: ${{ steps.ver.outputs.IS_PRERELEASE }}
     steps:
       - uses: actions/checkout@v4
       - name: get version from tag
