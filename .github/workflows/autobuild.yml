@@ -76,8 +76,8 @@ jobs:
         path: release
     - uses: softprops/action-gh-release@v2
       with:
-          tag_name: ${{ needs.prepare.outputs.version }}
-          name: Release ${{ needs.prepare.outputs.version }}
+          tag_name: ${{ github.ref_name }}
+          name: Release ${{ github.ref_name }}
           prerelease: ${{ needs.prepare.outputs.pre == 'true' }}
           draft: false
           generate_release_notes: true
