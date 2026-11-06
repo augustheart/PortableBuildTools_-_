@@ -10,7 +10,7 @@ on:
 
 env:
   # Customize the CMake build type here (Release, Debug, RelWithDebInfo, etc.)
-  BUILD_TYPE: Release
+  BUILD_TYPE: MinSizeRel
 
 jobs:
   prepare:
@@ -43,7 +43,7 @@ jobs:
 
     - name: Build
       # Build your program with the given configuration
-      run: cmake --build ${{github.workspace}}/build --config MinSizeRel
+      run: cmake --build ${{github.workspace}}/build --config ${BUILD_TYPE}
     - name: build zip
       shell: bash
       run: 7z a -tzip -mx=9 release/portablebuildtools.zip build/MinSizeRel/portablebuildtools.exe
