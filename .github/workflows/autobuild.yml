@@ -18,6 +18,7 @@ jobs:
     outputs:
       version: ${{ steps.ver.outputs.VERSION }}
     steps:
+      - uses: actions/checkout@v4
       - name: get version from tag
         id: ver
         run: |
